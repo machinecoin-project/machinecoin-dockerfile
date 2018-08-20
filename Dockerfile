@@ -32,7 +32,7 @@ RUN git checkout ${MACVERSION} && mkdir -p /machinecoin/machinecoin-${MACVERSION
 
 WORKDIR /machinecoin/depends
 
-RUN make
+RUN make -j4
 
 WORKDIR /machinecoin
 
@@ -40,7 +40,7 @@ RUN ./autogen.sh
 
 RUN ./configure CPPFLAGS="-I${BDB_PREFIX}/include/ -O2" LDFLAGS="-L${BDB_PREFIX}/lib/ -static-libstdc++" --with-gui --prefix=${MACPREFIX} --disable-ccache --disable-maintainer-mode --disable-dependency-tracking --enable-glibc-back-compat --enable-reduce-exports --disable-bench --disable-gui-tests --enable-static
 
-RUN make 
+RUN make -j4
 
 RUN make install DESTDIR=/machinecoin/machinecoin-${MACVERSION}
 
