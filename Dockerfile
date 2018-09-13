@@ -2,7 +2,7 @@ FROM ubuntu:14.04
 
 MAINTAINER Alex Foster version: 0.1
 
-ENV MACVERSION=0.16
+ENV MACVERSION=0.17
 
 ENV MACPREFIX=/machinecoin/depends/x86_64-pc-linux-gnu
 
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y git build-essential wget pkg-config cur
 
 WORKDIR /
 
-RUN mkdir -p /berkeleydb && git clone https://github.com/machinecoin-project/machinecoin-core.git machinecoin
+RUN mkdir -p /berkeleydb && git clone https://gitlab.com/machinecoin-project/machinecoin-core.git machinecoin
 
 WORKDIR /berkeleydb
 
