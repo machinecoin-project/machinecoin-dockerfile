@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 
-MAINTAINER Nico Lucciola version: 0.1
+MAINTAINER Nico Lucciola version: 0.2
 
 ENV MACVERSION=0.17
 
