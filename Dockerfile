@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 
-MAINTAINER Alex Foster version: 0.1
+MAINTAINER Nico Lucciola version: 0.1
 
 ENV MACVERSION=0.17
 
