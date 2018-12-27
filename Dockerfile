@@ -2,7 +2,7 @@ FROM ubuntu:14.04
 
 MAINTAINER Nico Lucciola version: 0.2
 
-ENV MACVERSION=0.17
+ENV MACVERSION=0.16
 
 ENV MACPREFIX=/machinecoin/depends/x86_64-pc-linux-gnu
 
