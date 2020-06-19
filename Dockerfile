@@ -1,51 +1,32 @@
-FROM ubuntu:latest
+FROM ubuntu:bionic
 
-MAINTAINER Nico Lucciola version: 0.2
+ARG VERSION=0.17.1
 
-ENV MACVERSION=0.16
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils python3 cmake libgmp3-dev libboost-all-dev software-properties-common libminiupnpc-dev libzmq3-dev wget git unzip
+RUN add-apt-repository -y ppa:bitcoin/bitcoin && \
+    apt-get update && \
+    apt-get install -y libdb4.8-dev libdb4.8++-dev
 
-ENV MACPREFIX=/machinecoin/depends/x86_64-pc-linux-gnu
+WORKDIR /opt/bls
 
-RUN apt-get update && apt-get install -y git build-essential wget pkg-config curl libtool autotools-dev automake libssl-dev libevent-dev bsdmainutils libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev libboost-test-dev libboost-thread-dev
+RUN wget https://github.com/codablock/bls-signatures/archive/v20181101.zip && \
+    unzip v20181101.zip && \
+    cd bls-signatures-20181101 && \
+    cmake . && \
+    make install
 
-WORKDIR /
+WORKDIR /opt/machinecoin
 
-RUN mkdir -p /berkeleydb && git clone https://gitlab.com/machinecoin-project/machinecoin-core.git machinecoin
+RUN git clone https://github.com/machinecoin-project/machinecoin-core && \
+    cd machinecoin-core && \
+    git checkout ${VERSION} && \
+    ./autogen.sh && \
+    ./configure --enable-static && \
+    make -j4
 
-WORKDIR /berkeleydb
+RUN cp /opt/machinecoin/machinecoin-core/src/machinecoin-cli /usr/local/bin && \
+    cp /opt/machinecoin/machinecoin-core/src/machinecoin-tx /usr/local/bin && \
+    cp /opt/machinecoin/machinecoin-core/src/machinecoind /usr/local/bin
 
-RUN wget http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz && tar -xvf db-4.8.30.NC.tar.gz && rm db-4.8.30.NC.tar.gz && mkdir -p db-4.8.30.NC/build_unix/build
-
-ENV BDB_PREFIX=/berkeleydb/db-4.8.30.NC/build_unix/build
-
-WORKDIR /berkeleydb/db-4.8.30.NC/build_unix
-
-RUN ../dist/configure --disable-shared --enable-cxx --with-pic --prefix=$BDB_PREFIX
-
-RUN make install
-
-RUN apt-get update && apt-get install -y libminiupnpc-dev libzmq3-dev libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler libqrencode-dev
-
-WORKDIR /machinecoin
-
-RUN git checkout ${MACVERSION} && mkdir -p /machinecoin/machinecoin-${MACVERSION}
-
-WORKDIR /machinecoin/depends
-
-RUN make -j4
-
-WORKDIR /machinecoin
-
-RUN ./autogen.sh
-
-RUN ./configure CPPFLAGS="-I${BDB_PREFIX}/include/ -O2" LDFLAGS="-L${BDB_PREFIX}/lib/ -static-libstdc++" --with-gui --prefix=${MACPREFIX} --disable-ccache --disable-maintainer-mode --disable-dependency-tracking --enable-glibc-back-compat --enable-reduce-exports --disable-bench --disable-gui-tests --enable-static
-
-RUN make -j4
-
-RUN make install DESTDIR=/machinecoin/machinecoin-${MACVERSION}
-
-RUN mv /machinecoin/machinecoin-${MACVERSION}${MACPREFIX} /machinecoin-${MACVERSION} && strip /machinecoin-${MACVERSION}/bin/* && rm -rf /machinecoin-${MACVERSION}/lib/pkgconfig && find /machinecoin-${MACVERSION} -name "lib*.la" -delete && find /machinecoin-${MACVERSION} -name "lib*.a" -delete 
-
-WORKDIR /
-
-RUN tar cvf machinecoin-${MACVERSION}.tar machinecoin-${MACVERSION} 
+CMD [ "machinecoind" ]
